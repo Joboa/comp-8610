@@ -73,7 +73,7 @@ def train(model, x, y, n_epochs, batch_size=1):
 
 
 #### (d-1) Adaline: Stochastic Gradient descent ####
-class Adaline():
+class AdalineSGD():
     def __init__(self, n_features, learning_rate):
         self.n_features = n_features
         self.weights = torch.zeros(n_features, 1, dtype=float)
