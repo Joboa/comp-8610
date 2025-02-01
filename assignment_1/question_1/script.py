@@ -26,29 +26,29 @@ def plot_data(x, y, fig_x, fig_y):
     plt.ylabel("y")
     plt.show()
 
-def SGDAdaline(Input, d_train_y, lr=0.2, stop=0.001):
-	weight = np.random.random(Input.shape[1])
+# def SGDAdaline(Input, d_train_y, lr=0.2, stop=0.001):
+# 	weight = np.random.random(Input.shape[1])
 	
-	Error=[stop +1]
-	# check the stop condition for the network
-	while Error[-1] > stop or Error[-1]-Error[-2] > 0.0001:
-		error = []
-		for i in range(Input.shape[0]):
-			Y_input = sum(weight*Input[i]) + bias
+# 	Error=[stop +1]
+# 	# check the stop condition for the network
+# 	while Error[-1] > stop or Error[-1]-Error[-2] > 0.0001:
+# 		error = []
+# 		for i in range(Input.shape[0]):
+# 			Y_input = sum(weight*Input[i]) + bias
 			
-			# Update the weight
-			for j in range(Input.shape[1]):
-				weight[j]=weight[j] + lr*(d_train_y[i]-Y_input)*Input[i][j]
+# 			# Update the weight
+# 			for j in range(Input.shape[1]):
+# 				weight[j]=weight[j] + lr*(d_train_y[i]-Y_input)*Input[i][j]
 
-			# Update the bias
-			bias=bias + lr*(d_train_y[i]-Y_input)
+# 			# Update the bias
+# 			bias=bias + lr*(d_train_y[i]-Y_input)
 			
-			# Store squared error value
-			error.append((d_train_y[i]-Y_input)**2)
-		# Store sum of square errors
-		Error.append(sum(error))
-		print('Error :',Error[-1])
-	return weight, bias
+# 			# Store squared error value
+# 			error.append((d_train_y[i]-Y_input)**2)
+# 		# Store sum of square errors
+# 		Error.append(sum(error))
+# 		print('Error :',Error[-1])
+# 	return weight, bias
 
 def activation(x, act_type):
     if act_type == "adaline":
@@ -81,7 +81,6 @@ def BGDAdaline(d_train_x, d_train_y, lr=0.2, act_type="adaline", n_epochs=10):
             for j in range(n_features):
                 weight_gradient[j] += lr *(d_train_y[i] - y_hat) * d_train_x[i]
 
-            # Store squared error value
             mse = (d_train_y[i] - y_hat) ** 2
             print("MSE:", mse)
             error.append(mse)
