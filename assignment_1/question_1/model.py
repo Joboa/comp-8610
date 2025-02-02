@@ -6,7 +6,7 @@ class NNModel(nn.Module):
 
         self.activation = act_type
 
-        if self.activation == "linear":
+        if self.activation == "adaline":
             self.activation = nn.Identity
         if self.activation == "sigmoid":
             self.activation = nn.Sigmoid

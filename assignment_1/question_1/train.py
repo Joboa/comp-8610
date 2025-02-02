@@ -12,7 +12,7 @@ def train_model_bgd(x_train, target, model, learning_rate, n_epochs):
     for epoch in range(n_epochs):
         model.train()
         optimizer.zero_grad()
-        y_hat = model.forward(x_train)
+        y_hat = model(x_train)
         loss = loss_fn(y_hat, target)
         losses.append(loss.item())
         loss.backward()
@@ -97,7 +97,7 @@ def train_model_gd(x_train, target, model, learning_rate, n_epochs, batch_size=N
         batch_size = len(x_train)
 
     dataset = TensorDataset(x_train, target)
-    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
 
     for epoch in range(n_epochs):
         model.train()
