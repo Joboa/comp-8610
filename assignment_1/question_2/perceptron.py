@@ -13,7 +13,7 @@ class Perceptron():
         self.zeros = torch.zeros(1)
 
     def forward(self, x):
-        linear = torch.mm(x, self.weights) + self.bias
+        linear = torch.mm(x, self.weights)
         predictions = torch.where(linear > 0., self.ones, self.zeros)
         return predictions
         

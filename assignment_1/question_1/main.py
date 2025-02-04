@@ -68,7 +68,7 @@ average_loss = {}
 x_train, x_test, y_train, y_test = cross_validation(X, Y, 32)
 
 model = NNModel("sigmoid")
-losses = train_model_bgd(
+losses = train_model_sgd(
     x_train=x_train,
     target=y_train,
     model=model,
