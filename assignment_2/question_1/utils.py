@@ -1,13 +1,17 @@
 import torch
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
 import torch.nn as nn
 from torch import optim
 from torch.utils.data import Subset, DataLoader
 from sklearn.model_selection import KFold
+from sklearn.metrics import confusion_matrix
 
 from config import CONFIG
 from model import MNISTANN
 
-selected_optimizer = CONFIG["hyper_params"]["optimizer"]
+# selected_optimizer = CONFIG["hyper_params"]["optimizer"]
 
 
 def data_iter(data_loader):
@@ -20,9 +24,9 @@ def data_iter(data_loader):
     return images, labels
 
 
-def optimizers(model, learning_rate, decay_value):
+def optimizers(model, optimizer_name, learning_rate, decay_value):
     """Returns an optimization type based on the selected optimizer"""
-    return getattr(optim, selected_optimizer)(model.parameters(),
+    return getattr(optim, optimizer_name)(model.parameters(),
                                               lr=learning_rate,
                                               weight_decay=decay_value)
 
@@ -77,6 +81,9 @@ def test_model(model, test_loader, criterion):
     correct = 0
     total = 0
 
+    true_labels = []
+    pred_labels = []
+
     with torch.no_grad():
         for data, labels in test_loader:
             outputs = model(data)
@@ -94,10 +101,14 @@ def test_model(model, test_loader, criterion):
             correct += batch_correct
             total += batch_total
 
+            # For confusion matrix
+            true_labels.extend(labels.cpu().numpy())
+            pred_labels.extend(predicted.cpu().numpy())
+
     avg_loss = sum(batch_losses) / len(batch_losses)
     avg_accurracy = 100 * correct / total
 
-    return avg_loss, avg_accurracy, batch_losses, batch_accuracies
+    return avg_loss, avg_accurracy, batch_losses, batch_accuracies, true_labels, pred_labels
 
 
 # K-Fold Cross-Validation
@@ -118,6 +129,7 @@ def cross_validation(n_splits,
                'train_acc': [],
                'val_loss': [],
                'val_acc': []}
+    # confusion_matrices = []
 
     for fold, (train_idx, val_idx) in enumerate(kfold.split(train_dataset)):
         print(f'Fold {fold + 1}')
@@ -125,6 +137,7 @@ def cross_validation(n_splits,
         # Training and validation subsets
         train_subset = Subset(train_dataset, train_idx)
         val_subset = Subset(train_dataset, val_idx)
+        print(f"Length of train subset: {len(train_subset)}")
 
         # Dataloader for Train and validation sets
         trainloader = DataLoader(
@@ -138,6 +151,10 @@ def cross_validation(n_splits,
         fold_val_loss = []
         fold_val_acc = []
 
+        # For confusion matrix
+        # true_labels = []
+        # pred_labels = []
+
         model = MNISTANN(input_size, hidden_layers_sizes, output_size)
         optimizer = optimizers(model, learning_rate, decay_value=decay_value)
         loss_fn = nn.CrossEntropyLoss()
@@ -148,15 +165,30 @@ def cross_validation(n_splits,
         fold_train_acc.extend(train_acc)
 
         # Validate the model
-        val_loss, val_acc, _, _ = test_model(model, valloader, loss_fn)
+        val_loss, val_acc, _, _, true_label, pred_label = test_model(model, valloader, loss_fn)
         fold_val_loss.append(val_loss)
         fold_val_acc.append(val_acc)
+
+        # Labels and predictions for confusion matrix
+        # true_labels.extend(true_label)
+        # pred_labels.extend(pred_label)
+
+        # Update confusion matrix for the fold
+        # cm = confusion_matrix(true_labels, pred_labels)
+        # confusion_matrices.append(cm)
 
         # Update results
         results['train_loss'].append(fold_train_loss[-1])
         results['train_acc'].append(fold_train_acc[-1])
         results['val_loss'].append(fold_val_loss[-1])
         results['val_acc'].append(fold_val_acc[-1])
+
+        # plt.figure(figsize=(8, 6))
+        # sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=range(output_size), yticklabels=range(output_size))
+        # plt.xlabel("Predicted")
+        # plt.ylabel("True")
+        # plt.title("Average Confusion Matrix over K-Folds")
+        # plt.show()
 
         # Loss/accuracy for the fold based on the last epoch's values
         print(
@@ -175,9 +207,13 @@ def cross_validation(n_splits,
     print(
         f'Average Validation Loss: {avg_val_loss:.4f}, Average Validation Accuracy: {avg_val_acc:.2f}%')
 
+
+    # avg_confusion_matrix = np.mean(confusion_matrices, axis=0)
+
     return {
         "train_loss": results['train_loss'],
         "train_acc": results['train_acc'],
         "val_loss": results['val_loss'],
-        "val_acc": results['val_acc']
+        "val_acc": results['val_acc'],
+        # "confusion_matrices": confusion_matrices
     }
