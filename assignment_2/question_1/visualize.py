@@ -23,9 +23,12 @@ def visualize_training_data(img, labels, n: int, m: int, fig_name="visualize_tra
     N = n * m
     for i in range(N):
         ax = axes[i]
-        ax.imshow(img[i].numpy().squeeze(), cmap="gray")
+        # ax.imshow(img[i].numpy().squeeze(), cmap="gray") # For gray-scale images
+        ax.imshow(img[i].permute(1, 2, 0).numpy()) # For RGB images [(C, H, W) to (H, W, C)]
         ax.set_title(f"Label: {labels[i].item()}")
         ax.axis("off")
+        ax.set_xticks([])
+        ax.set_yticks([])
     plt.savefig(f"{results}/{fig_name}.png")
     plt.show()
 

@@ -1,6 +1,6 @@
 import torch.nn as nn
 
-from data import mnist_data
+from data import mnist_data, cifar_data
 from config import CONFIG
 from model import MNISTANN
 from utils import data_iter, optimizers, train_model, test_model, cross_validation
@@ -22,22 +22,23 @@ hidden_layers_sizes = CONFIG["net_params"]["hidden_layers_sizes"] = [128, 64, 32
 output_size = CONFIG["net_params"]["output_size"]
 
 
-train_dataset, test_dataset, train_dataloader, test_dataloader = mnist_data(
+train_dataset, test_dataset, train_dataloader, test_dataloader = cifar_data(
     batch_size)
 
 ############################### Visualize training data  ############################
-# images, labels = data_iter(train_dataloader)
-# visualize_training_data(images,
-#                         labels, 2, 4,
-#                         fig_name="visualize_train")
+images, labels = data_iter(train_dataloader)
+images = (images + 1) / 2
+visualize_training_data(images,
+                        labels, 2, 4,
+                        fig_name="visualize_train")
 
 
 ################################## Train model  ######################################
-model = MNISTANN(input_size, hidden_layers_sizes, output_size)
-optimizer = optimizers(model=model, optimizer_name="SGD", learning_rate=learning_rate, decay_value=0)
-loss_fn = nn.CrossEntropyLoss()
-train_losses, train_accuracies = train_model(
-    num_epochs, model, optimizer, loss_fn, train_dataloader)
+# model = MNISTANN(input_size, hidden_layers_sizes, output_size)
+# optimizer = optimizers(model=model, optimizer_name="SGD", learning_rate=learning_rate, decay_value=0)
+# loss_fn = nn.CrossEntropyLoss()
+# train_losses, train_accuracies = train_model(
+#     num_epochs, model, optimizer, loss_fn, train_dataloader)
 
 
 
