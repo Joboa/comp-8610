@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
+# import seaborn as sns
 import torch.nn as nn
 from torch import optim
 from torch.utils.data import Subset, DataLoader
