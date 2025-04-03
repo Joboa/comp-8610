@@ -124,7 +124,7 @@ class UnstructuredDataset(torch.utils.data.Dataset):
 
 
 class GraphConvAutoencoder(nn.Module):
-    def __init__(self, in_channels, latent_size=32, skip=False):
+    def __init__(self, in_channels, latent_size=64, skip=False):
         super(GraphConvAutoencoder, self).__init__()
 
         self.latent_size = latent_size
@@ -200,19 +200,22 @@ class GraphConvAutoencoder(nn.Module):
         x_dec = self.deconv3(x_dec, data.edge_index)
 
         return torch.tanh(x_dec)  # [-1, 1]
-    
+
 
 class GraphAttentionAutoencoder(nn.Module):
-    def __init__(self, in_channels, latent_size=32, skip=False):
+    def __init__(self, in_channels, latent_size=64, skip=False):
         super(GraphAttentionAutoencoder, self).__init__()
 
         self.latent_size = latent_size
         self.skip = skip
 
         # Encoder with GAT layers
-        self.conv1 = GATConv(in_channels, 16, heads=4, concat=True)  # Multi-head attention
-        self.conv2 = GATConv(16 * 4, 32, heads=2, concat=True)       # Reduce heads
-        self.conv3 = GATConv(32 * 2, 64, heads=1, concat=True)       # Single head
+        self.conv1 = GATConv(in_channels, 16, heads=4,
+                             concat=True)  # Multi-head attention
+        self.conv2 = GATConv(16 * 4, 32, heads=2,
+                             concat=True)       # Reduce heads
+        self.conv3 = GATConv(32 * 2, 64, heads=1,
+                             concat=True)       # Single head
 
         # Bottleneck
         self.fc_encode = nn.Linear(64, latent_size)
@@ -221,8 +224,10 @@ class GraphAttentionAutoencoder(nn.Module):
         self.fc_decode = nn.Linear(latent_size, 64)
 
         # Decoder GAT layers (reconstruction)
-        self.deconv1 = GATConv(64 + 32 if skip else 64, 32, heads=1, concat=True)
-        self.deconv2 = GATConv(32 + 16 if skip else 32, 16, heads=1, concat=True)
+        self.deconv1 = GATConv(
+            64 + 32 * 2 if skip else 64, 32, heads=1, concat=True)
+        self.deconv2 = GATConv(
+            32 + 16 * 4 if skip else 32, 16, heads=1, concat=True)
         self.deconv3 = GATConv(16, in_channels, heads=1, concat=False)
 
         # Dropout for regularization
@@ -277,6 +282,7 @@ class GraphAttentionAutoencoder(nn.Module):
 
         return torch.tanh(x_dec)  # Constrain output to [-1, 1]
 
+
 def total_variation_loss(x):
     """
     Compute Total Variation Loss for graph-structured data
@@ -326,7 +332,6 @@ def train_and_validate(model, train_loader, val_loader, device, logger, checkpoi
             batch = batch.to(device)
             optimizer.zero_grad()
 
-    
             reconstructed_x = model(batch)
             mse_loss = F.mse_loss(reconstructed_x, batch.x)
             tv_loss = total_variation_loss(reconstructed_x)
@@ -355,7 +360,8 @@ def train_and_validate(model, train_loader, val_loader, device, logger, checkpoi
         val_loss /= len(val_loader)
         val_losses.append(val_loss)
 
-        logger.info(f"Epoch {epoch}, Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}")
+        logger.info(
+            f"Epoch {epoch}, Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}")
 
         # Early stopping and model checkpointing
         if val_loss < best_val_loss:
@@ -363,7 +369,8 @@ def train_and_validate(model, train_loader, val_loader, device, logger, checkpoi
             epochs_no_improve = 0
 
             # Save the best model
-            checkpoint_path = os.path.join(checkpoint_dir, f'best_model_epoch_{epoch}.pth')
+            checkpoint_path = os.path.join(
+                checkpoint_dir, f'best_model_epoch_{epoch}.pth')
             torch.save({
                 'epoch': epoch,
                 'model_state_dict': model.state_dict(),
@@ -401,7 +408,6 @@ def train_and_validate(model, train_loader, val_loader, device, logger, checkpoi
     logger.info(f"Loss plot saved as 'losses.png' in {checkpoint_dir}")
 
     return model
-
 
 
 def main():
@@ -442,8 +448,8 @@ def main():
 
 
 if __name__ == "__main__":
-    ########################Create Graph Data for training#############################
-    #  
+    ######################## Create Graph Data for training#############################
+    #
     # folder_path = './data/datasets/CSW'
     # dataset = VelocityDataset(folder_path)
     # # dataset = Subset(dataset, range(500))
@@ -459,5 +465,5 @@ if __name__ == "__main__":
 
     #####################################################################################
 
-    ######################################Train model####################################
+    ###################################### Train model####################################
     main()
